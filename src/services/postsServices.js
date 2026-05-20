@@ -1,56 +1,45 @@
 // src/services/postsServices.js
-// Servicio de posts con datos en memoria (temporal)
-// TODO: migrar a consultas PostgreSQL usando pool.query()
+// Servicio de posts con consultas PostgreSQL parametrizadas
 
-let posts = [
-  {
-    id: 1,
-    title: 'Introducción a Node.js',
-    content: 'Node.js es un runtime de JavaScript...',
-    author_id: 1,
-    published: true,
-  },
-  {
-    id: 2,
-    title: 'PostgreSQL vs MySQL',
-    content: 'Ambas bases de datos tienen ventajas...',
-    author_id: 2,
-    published: true,
-  },
-  {
-    id: 3,
-    title: 'APIs RESTful',
-    content: 'REST es un estilo arquitectónico...',
-    author_id: 1,
-    published: true,
-  },
-]
+import pool from '../db/config.js'
 
-let nextId = 4
-
-export const getAll = () => posts
-
-export const getById = (id) => posts.find((p) => p.id === id)
-
-export const getByAuthor = (authorId) =>
-  posts.filter((p) => p.author_id === authorId)
-
-export const create = (data) => {
-  const post = { id: nextId++, ...data }
-  posts.push(post)
-  return post
+export const getAll = async () => {
+  const { rows } = await pool.query('SELECT * FROM posts ORDER BY id')
+  return rows
 }
 
-export const update = (id, data) => {
-  const index = posts.findIndex((p) => p.id === id)
-  if (index === -1) return null
-  posts[index] = { ...posts[index], ...data }
-  return posts[index]
+export const getById = async (id) => {
+  const { rows } = await pool.query('SELECT * FROM posts WHERE id = $1', [id])
+  return rows[0] || null
 }
 
-export const remove = (id) => {
-  const index = posts.findIndex((p) => p.id === id)
-  if (index === -1) return false
-  posts.splice(index, 1)
-  return true
+export const getByAuthor = async (authorId) => {
+  const { rows } = await pool.query(
+    'SELECT * FROM posts WHERE author_id = $1',
+    [authorId],
+  )
+  return rows
+}
+
+export const create = async (data) => {
+  const { title, content, author_id, published } = data
+  const { rows } = await pool.query(
+    'INSERT INTO posts (title, content, author_id, published) VALUES ($1, $2, $3, $4) RETURNING *',
+    [title, content, author_id, published || false],
+  )
+  return rows[0]
+}
+
+export const update = async (id, data) => {
+  const { title, content, author_id, published } = data
+  const { rows } = await pool.query(
+    'UPDATE posts SET title = $1, content = $2, author_id = $3, published = $4 WHERE id = $5 RETURNING *',
+    [title, content, author_id, published || false, id],
+  )
+  return rows[0] || null
+}
+
+export const remove = async (id) => {
+  const { rowCount } = await pool.query('DELETE FROM posts WHERE id = $1', [id])
+  return rowCount > 0
 }
