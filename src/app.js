@@ -1,27 +1,24 @@
-/*
-  Configuración principal de la aplicación Express.
-  Acá se definen middlewares globales y se montan las rutas.
-*/
+// src/app.js
+// Configuración de Express: middlewares globales y montaje de rutas
 
-const express = require('express')
-const cors = require('cors')
-const errorHandler = require('./middlewares/errorHandler')
-const indexRouter = require('./routes/index')
-const authorsRouter = require('./routes/authorsRouter')
-const postsRouter = require('./routes/postsRouter')
+import express from 'express'
+import cors from 'cors'
+import errorHandler from './middlewares/errorHandler.js'
+import indexRouter from './routes/index.js'
+import authorsRouter from './routes/authorsRouter.js'
+import postsRouter from './routes/postsRouter.js'
 
 const app = express()
 
-// Middlewares globales
-app.use(cors()) // Permite peticiones desde otros dominios (frontend)
-app.use(express.json()) // Convierte el body de las requests a JSON automáticamente
+app.use(cors()) // Permite peticiones desde el frontend (otros dominios)
+app.use(express.json()) // Convierte el body de las requests a objeto JS
 
-// Rutas
+// Rutas de la API
 app.use('/', indexRouter)
 app.use('/authors', authorsRouter)
 app.use('/posts', postsRouter)
 
-// Middleware de errores (va AL FINAL después de las rutas)
+// Middleware de errores (siempre al final)
 app.use(errorHandler)
 
-module.exports = app
+export default app
