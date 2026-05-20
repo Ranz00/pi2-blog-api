@@ -1,0 +1,208 @@
+openapi: "3.0.0"
+
+info:
+  title: "MiniBlog API"
+  description: "API REST para gestionar autores y publicaciones. Node.js + Express + PostgreSQL."
+  version: "1.0.0"
+
+servers:
+  - url: "http://localhost:3000"
+    description: "Desarrollo local"
+
+# Anclas reutilizables para respuestas comunes
+x-errors:
+  notFound: &notFound
+    description: "Recurso no encontrado"
+    content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+  badRequest: &badRequest
+    description: "Datos inválidos"
+    content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+
+paths:
+  # ─── AUTHORS ───────────────────────────────────────────────
+  /authors:
+    get:
+      summary: "Listar todos los autores"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Author"
+    post:
+      summary: "Crear un autor"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthorInput"
+      responses:
+        "201": { description: "Creado", content: { application/json: { schema: { $ref: "#/components/schemas/Author" } } } }
+        "400": *badRequest
+
+  /authors/{id}:
+    get:
+      summary: "Obtener un autor por ID"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Author"
+        "404": *notFound
+    put:
+      summary: "Actualizar un autor"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthorInput"
+      responses:
+        "200":
+          description: "Actualizado"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Author"
+        "400": *badRequest
+        "404": *notFound
+    delete:
+      summary: "Eliminar un autor"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "204": { description: "Eliminado (sin contenido)" }
+        "404": *notFound
+
+  # ─── POSTS ─────────────────────────────────────────────────
+  /posts:
+    get:
+      summary: "Listar todos los posts"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+    post:
+      summary: "Crear un post"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInput"
+      responses:
+        "201": { description: "Creado", content: { application/json: { schema: { $ref: "#/components/schemas/Post" } } } }
+        "400": *badRequest
+
+  /posts/{id}:
+    get:
+      summary: "Obtener un post por ID"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "404": *notFound
+    put:
+      summary: "Actualizar un post"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInput"
+      responses:
+        "200":
+          description: "Actualizado"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "400": *badRequest
+        "404": *notFound
+    delete:
+      summary: "Eliminar un post"
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "204": { description: "Eliminado (sin contenido)" }
+        "404": *notFound
+
+  /posts/author/{authorId}:
+    get:
+      summary: "Posts de un autor específico"
+      parameters:
+        - { name: authorId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+
+components:
+  schemas:
+    Author:
+      type: object
+      properties:
+        id:        { type: integer, description: "ID autogenerado" }
+        name:      { type: string,  description: "Nombre del autor" }
+        email:     { type: string,  description: "Email único" }
+        bio:       { type: string,  description: "Biografía" }
+        created_at:{ type: string, format: date-time, description: "Fecha de creación" }
+
+    AuthorInput:
+      type: object
+      required: [name, email]
+      properties:
+        name:  { type: string, description: "Obligatorio" }
+        email: { type: string, description: "Obligatorio, único" }
+        bio:   { type: string, description: "Opcional" }
+
+    Post:
+      type: object
+      properties:
+        id:         { type: integer }
+        title:      { type: string,  description: "Título del post" }
+        content:    { type: string,  description: "Contenido" }
+        author_id:  { type: integer, description: "FK → authors.id" }
+        published:  { type: boolean, description: "Publicado (default false)" }
+        created_at: { type: string, format: date-time }
+
+    PostInput:
+      type: object
+      required: [title, content, author_id]
+      properties:
+        title:     { type: string,  description: "Obligatorio" }
+        content:   { type: string,  description: "Obligatorio" }
+        author_id: { type: integer, description: "Obligatorio, debe existir en authors" }
+        published: { type: boolean, description: "Opcional, default false" }
+
+    Error:
+      type: object
+      properties:
+        error: { type: string, description: "Mensaje de error" }
