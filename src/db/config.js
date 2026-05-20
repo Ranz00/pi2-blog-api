@@ -12,9 +12,9 @@ const { Pool } = pg
   Ejemplo: postgresql://postgres:root@localhost:5432/miniblog
   Si no está definida, la conexión falla — por eso es obligatoria en .env
 */
+// (funciona en Railway y local)
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: false,
 })
 
 export default pool
