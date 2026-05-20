@@ -1,50 +1,39 @@
 // src/services/authorsServices.js
-// Servicio de authors con datos en memoria (temporal)
-// TODO: migrar a consultas PostgreSQL usando pool.query()
+// Servicio de authors con consultas PostgreSQL parametrizadas
 
-let authors = [
-  {
-    id: 1,
-    name: 'Ana García',
-    email: 'ana@example.com',
-    bio: 'Desarrolladora full-stack',
-  },
-  {
-    id: 2,
-    name: 'Carlos Ruiz',
-    email: 'carlos@example.com',
-    bio: 'Escritor técnico',
-  },
-  {
-    id: 3,
-    name: 'María López',
-    email: 'maria@example.com',
-    bio: 'Ingeniera de software',
-  },
-]
+import pool from '../db/config.js'
 
-let nextId = 4
-
-export const getAll = () => authors
-
-export const getById = (id) => authors.find((a) => a.id === id)
-
-export const create = (data) => {
-  const author = { id: nextId++, ...data }
-  authors.push(author)
-  return author
+export const getAll = async () => {
+  const { rows } = await pool.query('SELECT * FROM authors ORDER BY id')
+  return rows
 }
 
-export const update = (id, data) => {
-  const index = authors.findIndex((a) => a.id === id)
-  if (index === -1) return null
-  authors[index] = { ...authors[index], ...data }
-  return authors[index]
+export const getById = async (id) => {
+  const { rows } = await pool.query('SELECT * FROM authors WHERE id = $1', [id])
+  return rows[0] || null
 }
 
-export const remove = (id) => {
-  const index = authors.findIndex((a) => a.id === id)
-  if (index === -1) return false
-  authors.splice(index, 1)
-  return true
+export const create = async (data) => {
+  const { name, email, bio } = data
+  const { rows } = await pool.query(
+    'INSERT INTO authors (name, email, bio) VALUES ($1, $2, $3) RETURNING *',
+    [name, email, bio || null],
+  )
+  return rows[0]
+}
+
+export const update = async (id, data) => {
+  const { name, email, bio } = data
+  const { rows } = await pool.query(
+    'UPDATE authors SET name = $1, email = $2, bio = $3 WHERE id = $4 RETURNING *',
+    [name, email, bio || null, id],
+  )
+  return rows[0] || null
+}
+
+export const remove = async (id) => {
+  const { rowCount } = await pool.query('DELETE FROM authors WHERE id = $1', [
+    id,
+  ])
+  return rowCount > 0
 }
