@@ -1,11 +1,8 @@
-/*
-  Punto de entrada del servidor.
-  Importa la app configurada y la pone a escuchar en un puerto.
-  Las variables de entorno se cargan desde .env gracias a dotenv.
-*/
+// src/server.js
+// Punto de entrada del servidor. Arranca la app en el puerto configurado.
 
-const app = require('./app')
-require('dotenv').config()
+import 'dotenv/config'
+import app from './app.js'
 
 const PORT = process.env.PORT || 3000
 
