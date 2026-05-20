@@ -1,38 +1,19 @@
 // src/middlewares/errorHandler.js
-/*
-  Middleware global de manejo de errores.
-  Express lo detecta automáticamente porque tiene 4 parámetros.
-  Se ejecuta cuando una ruta llama a next(err) o cuando ocurre una excepción.
-*/
+// Middleware global de errores. Express lo detecta por sus 4 parámetros.
 
 const errorHandler = (err, req, res, next) => {
-  // Mostramos el error en consola para poder debuggear
-  console.error('[ERROR]', err.stack)
+  console.error('[ERROR]', err.message)
 
-  /*
-    Código 23505 de PostgreSQL = violación de restricción UNIQUE.
-    Ocurre cuando intentamos crear un author con un email que ya existe.
-    Respondemos 409 (Conflict) en lugar de 500 porque el error es del cliente,
-    no del servidor.
-  */
+  // 23505 = unique violation (email duplicado en PostgreSQL)
   if (err.code === '23505') {
-    return res
-      .status(409)
-      .json({ error: 'El email ingresado ya está registrado' })
+    return res.status(409).json({ error: 'El email ya está registrado' })
   }
 
-  /*
-    Si el error tiene una propiedad .status, la usamos.
-    Si no, asumimos 500 (Internal Server Error).
-    Esto permite que los services puedan hacer:
-      const error = new Error('No encontrado')
-      error.status = 404
-      throw error
-  */
+  // Si el error tiene status propio lo usamos, si no va 500
   const status = err.status || 500
-  res.status(status).json({
-    error: err.message || 'Error interno del servidor',
-  })
+  res
+    .status(status)
+    .json({ error: err.message || 'Error interno del servidor' })
 }
 
 export default errorHandler
