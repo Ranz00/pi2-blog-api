@@ -93,6 +93,9 @@ Con el servidor corriendo:
 ### GET /posts
 ![GET /posts](docs/screenshots/posts.png)
 
+### Deploy en Railway
+![Deploy en Railway](docs/screenshots/deploy-railway.png)
+
 ## Uso de IA
 
 Este proyecto fue desarrollado con asistencia de Claude y OpenCode para generar la estructura, controllers, services, tests, documentación OpenAPI y resolución de errores durante el desarrollo.
