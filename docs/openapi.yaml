@@ -8,6 +8,8 @@ info:
 servers:
   - url: "http://localhost:3000"
     description: "Desarrollo local"
+  - url: "https://pi2-blog-api-production.up.railway.app"
+    description: "Producción en Railway"
 
 # Anclas reutilizables para respuestas comunes
 x-errors:

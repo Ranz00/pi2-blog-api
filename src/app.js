@@ -3,6 +3,8 @@
 
 import express from 'express'
 import cors from 'cors'
+import swaggerUi from 'swagger-ui-express'
+import YAML from 'yamljs'
 import errorHandler from './middlewares/errorHandler.js'
 import indexRouter from './routes/index.js'
 import authorsRouter from './routes/authorsRouter.js'
@@ -12,6 +14,10 @@ const app = express()
 
 app.use(cors()) // Permite peticiones desde el frontend (otros dominios)
 app.use(express.json()) // Convierte el body de las requests a objeto JS
+
+// Documentación interactiva con Swagger UI
+const swaggerDocument = YAML.load('./docs/openapi.yaml')
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 // Rutas de la API
 app.use('/', indexRouter)
