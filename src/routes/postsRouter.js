@@ -15,8 +15,8 @@ import { validatePost } from '../utils/validators.js'
 const router = Router()
 
 router.get('/', getAll)
-router.get('/:id', getById)
 router.get('/author/:authorId', getByAuthor)
+router.get('/:id', getById)
 router.post('/', validatePost, create)
 router.put('/:id', validatePost, update)
 router.delete('/:id', remove)

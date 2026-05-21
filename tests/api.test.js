@@ -2,9 +2,10 @@
 // Tests de integración para la API MiniBlog
 // Usa vitest + supertest para probar los endpoints HTTP
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterAll } from 'vitest'
 import request from 'supertest'
 import app from '../src/app.js'
+import pool from '../src/db/config.js'
 
 // Timeout más largo para conexión a BD en Railway
 const TIMEOUT = 15000
@@ -52,6 +53,10 @@ describe('Posts API', () => {
     expect(res.status).toBe(400)
     expect(res.body).toHaveProperty('errors')
   }, TIMEOUT)
+})
+
+afterAll(async () => {
+  await pool.end()
 })
 
 describe('Error handling', () => {
